@@ -1,9 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <h1> Just Showing request.POST: {{ request.POST }}</h1>
 <h1> Just Showing request.user: {{ request.user }}</h1>
 <h2> Just Showing request.GET: {{ request.POST }}</h2>
 <h3>{{ request }}</h3>
+
+<a href="/prof/user/home/company={{ company }}/run={{ run }}">Go to Run {{ run }} for {{ company }}</a>
 
 {% endblock %}
