@@ -2,11 +2,49 @@
 
 {% block content %}
 
-<h1> Just Showing request.POST: {{ request.POST }}</h1>
-<h1> Just Showing request.user: {{ request.user }}</h1>
-<h2> Just Showing request.GET: {{ request.POST }}</h2>
-<h3>{{ request }}</h3>
+<h2>Username: {{ request.user.username }}</h2>
+<h2>Company: {{ company }} </h2>
+<h3>Run Number: {{local_runno}}</h3>
+<h3>Global Run ID: {{ runpk }}</h3>
 
-your username is {{ request.user.username }} and you are working on run {{ run }} for {{ company }}.
+
+<p>
+The P&L File:
+{% for i in pnl_files %}
+    {{ i.TheActualFile }}
+{% endfor %}
+</p>
+<p>
+The Sales File:
+{% for i in sales_files %}
+    {{ i.TheActualFile }}
+{% endfor %}
+</p>
+<p>
+Key Files:
+{% for i in key_files %}
+    {{ i.TheActualFile }}
+{% endfor %}
+</p>
+
+
+<form action="{% url 'prof:user-home' %}runid-{{ runpk }}/" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <p>{{ form.non_field_errors }}</p>
+    <p>Type of File: {{ form.FileType }} </p>
+    <p>File Name: {{ form.FileName }} </p>
+    <p>{{ form.TheActualFile }} </p>
+    <p><input type="submit" value="Upload" /></p>
+</form>
+        
+        
+<br><br><br><br><h4> A few things to help work on this: </h4>
+<p>
+Request Method: {{request.method}} <br>
+Just Showing request.POST: {{ request.POST }}<br>
+Just Showing request.user: {{ request.user }}<br>
+Just Showing request.GET: {{ request.POST }}<br>
+{{ request }}
+</p>
 
 {% endblock %}

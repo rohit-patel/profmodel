@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'prof',
-    'guardian'
+    'guardian',
+    'django_extensions'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -145,3 +146,11 @@ AUTHENTICATION_BACKENDS = (
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+NOTEBOOK_ARGUMENTS = [
+    # exposes IP and port
+    '--ip=0.0.0.0',
+    '--port=8081',
+    # disables the browser
+    '--no-browser',
+]

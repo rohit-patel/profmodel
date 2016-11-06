@@ -1,9 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1> Just Showing request.POST: {{ request.POST }}</h1>
-<h1> Just Showing request.user: {{ request.user }}</h1>
-<h2> Just Showing request.GET: {{ request.POST }}</h2>
-<h3>{{ request }}</h3>
+<br><br><br><br><h4> A few things to help work on this: </h4>
+<p>
+Request Method: {{request.method}} <br>
+Just Showing request.POST: {{ request.POST }}<br>
+Just Showing request.user: {{ request.user }}<br>
+Just Showing request.GET: {{ request.POST }}<br>
+{{ request }}
+</p>
+
 
 {% endblock %}
