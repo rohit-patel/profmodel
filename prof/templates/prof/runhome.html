@@ -9,21 +9,21 @@
 
 
 <p>
-The P&L File:
+The P&L File:<br>
 {% for i in pnl_files %}
-    {{ i.TheActualFile }}
+    {{ i.FileName }}
 {% endfor %}
 </p>
 <p>
-The Sales File:
+The Sales File:<br>
 {% for i in sales_files %}
-    {{ i.TheActualFile }}
+    {{ i.FileName }}
 {% endfor %}
 </p>
 <p>
-Key Files:
+Key Files:<br>
 {% for i in key_files %}
-    {{ i.TheActualFile }}
+    {{ i.FileName }}
 {% endfor %}
 </p>
 
@@ -34,6 +34,7 @@ Key Files:
     <p>Type of File: {{ form.FileType }} </p>
     <p>File Name: {{ form.FileName }} </p>
     <p>{{ form.TheActualFile }} </p>
+    <!-- <input type="text" name="firstname"><br>  This was just a test field inserted to test behavior --!>
     <p><input type="submit" value="Upload" /></p>
 </form>
         
