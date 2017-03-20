@@ -6,19 +6,23 @@ from django.contrib.auth.models import User
 
 
 class RunSpace(models.Model):
+    """This is the model that stores IDs for the runs. Basically, all the files and data is mapped to the runs and this model has the primary run ID. 
+    """
     CompanyName = models.CharField(max_length=100, blank=False)
     RunNo = models.IntegerField(blank=False)
     RunName = models.CharField(max_length=20,blank=False)
     RunDescription = models.TextField(blank=True)
     class Meta:
         permissions = (
-            ('file_owner', 'File Owner'), 
-            ('file_edit_permission', 'File Editing Permission'), 
-            ('file_view_permission', 'File Viewing Permission'), 
+            ('run_owner', 'File Owner'), 
+            ('run_edit_permission', 'File Editing Permission'), 
+            ('run_view_permission', 'File Viewing Permission'), 
         )    
 
     
 class FileSpace(models.Model):
+    """These are the files uploaded by the user. Each file is mapped to a run and has user permissions that need to be managed.
+    """
     PossibleFileTypes = (('P','P&L File'),('K', 'Key File'),('S', 'Sales Data File'))
     #Owner = models.ForeignKey(User, editable=False)
     UniqueRunID = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
@@ -29,3 +33,27 @@ class FileSpace(models.Model):
     FileName = models.CharField(max_length=20,blank=False)
     TheActualFile = models.FileField(blank=False)
     FileDescription = models.TextField(blank=True)
+    class Meta:
+        permissions = (
+            ('file_owner', 'File Owner'), 
+            ('file_edit_permission', 'File Editing Permission'), 
+            ('file_view_permission', 'File Viewing Permission'), 
+        )    
+    
+    
+class TransactionData(models.Model):
+    UniqueRunID = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
+    SourceFileObject = models.ForeignKey(FileSpace,on_delete=models.CASCADE)
+    OrderNumber = models.CharField(max_length=25,blank=False)
+    OrderDate = models.DateField(blank=False)
+    BusinessUnit = models.CharField(max_length=100,blank=False)
+    CustomerNumber = models.CharField(max_length=25,blank=False)
+    CustomerName = models.CharField(max_length=100,blank=True)
+    ProductNumber = models.CharField(max_length=25,blank=False)
+    Quantity = models.IntegerField(blank=False)
+    ListPrice = models.FloatField(blank=False)
+    TotalPrice = models.FloatField(blank=False)
+    Discount = models.FloatField(blank=False)
+    InvoiceAmount = models.FloatField(blank=False)
+    
+    

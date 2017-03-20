@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'prof',
     'guardian',
-    'django_extensions'
+    'django_extensions',
+    'django_cleanup'
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -78,8 +79,12 @@ WSGI_APPLICATION = 'proft1.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'djangot1',
+        'USER': 'postgresdjangouser',
+        'PASSWORD': 'pgsql12',
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
@@ -154,3 +159,15 @@ NOTEBOOK_ARGUMENTS = [
     # disables the browser
     '--no-browser',
 ]
+
+
+
+
+
+
+####PROF SPECIFIC SETTINGS####
+desiredColumns=('Order Number', 'Order Date', 'Business Unit', 'Customer Number', 'Customer Name', 'Product Number', 'Quantity',
+                'List Price', 'Total Price', 'Discount', 'Invoice Amount')
+
+lastColumnName = 'All Months'
+transactionSheetName = 'TransactionData'

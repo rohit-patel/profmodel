@@ -7,23 +7,25 @@
 <h3>Run Number: {{local_runno}}</h3>
 <h3>Global Run ID: {{ runpk }}</h3>
 
+<a href="www.google.com"><button>Visit Page Now</button></a>
+
 
 <p>
 The P&L File:<br>
-{% for i in pnl_files %}
-    {{ i.FileName }}
+{% for file in pnl_files %}
+    <a href="{{ file.TheActualFile.url }}">{{ file.FileName }}</a>
 {% endfor %}
 </p>
 <p>
 The Sales File:<br>
-{% for i in sales_files %}
-    {{ i.FileName }}
+{% for file in sales_files %}
+    <a href="{{ file.TheActualFile.url }}">{{ file.FileName }}</a>
 {% endfor %}
 </p>
 <p>
 Key Files:<br>
-{% for i in key_files %}
-    {{ i.FileName }}
+{% for file in key_files %}
+    <a href="{{ file.TheActualFile.url }}">{{ file.FileName }}</a>
 {% endfor %}
 </p>
 
