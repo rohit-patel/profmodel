@@ -165,9 +165,5 @@ NOTEBOOK_ARGUMENTS = [
 
 
 
-####PROF SPECIFIC SETTINGS####
-desiredColumns=('Order Number', 'Order Date', 'Business Unit', 'Customer Number', 'Customer Name', 'Product Number', 'Quantity',
-                'List Price', 'Total Price', 'Discount', 'Invoice Amount')
 
-lastColumnName = 'All Months'
-transactionSheetName = 'TransactionData'
+

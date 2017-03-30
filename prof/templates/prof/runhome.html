@@ -13,19 +13,19 @@
 <p>
 The P&L File:<br>
 {% for file in pnl_files %}
-    <a href="{{ file.TheActualFile.url }}">{{ file.FileName }}</a>
+    <a href="{{ file.File.url }}">{{ file.FileName }}</a>
 {% endfor %}
 </p>
 <p>
 The Sales File:<br>
 {% for file in sales_files %}
-    <a href="{{ file.TheActualFile.url }}">{{ file.FileName }}</a>
+    <a href="{{ file.File.url }}">{{ file.FileName }}</a>
 {% endfor %}
 </p>
 <p>
 Key Files:<br>
 {% for file in key_files %}
-    <a href="{{ file.TheActualFile.url }}">{{ file.FileName }}</a>
+    <a href="{{ file.File.url }}">{{ file.FileName }}</a>
 {% endfor %}
 </p>
 
@@ -35,7 +35,7 @@ Key Files:<br>
     <p>{{ form.non_field_errors }}</p>
     <p>Type of File: {{ form.FileType }} </p>
     <p>File Name: {{ form.FileName }} </p>
-    <p>{{ form.TheActualFile }} </p>
+    <p>{{ form.File }} </p>
     <!-- <input type="text" name="firstname"><br>  This was just a test field inserted to test behavior --!>
     <p><input type="submit" value="Upload" /></p>
 </form>

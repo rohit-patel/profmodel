@@ -7,4 +7,4 @@ from prof.models import FileSpace
 class FileSpaceForm(forms.ModelForm):
     class Meta:
         model = FileSpace
-        fields = ['FileType', 'FileName', 'File','FileDescription']
+        fields = ['FileType', 'Name', 'File','Description']

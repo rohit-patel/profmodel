@@ -23,15 +23,15 @@ class RunSpace(models.Model):
 class FileSpace(models.Model):
     """These are the files uploaded by the user. Each file is mapped to a run and has user permissions that need to be managed.
     """
-    PossibleFileTypes = (('P','P&L File'),('K', 'Key File'),('S', 'Sales Data File'))
+    Possibletypes = (('P','P&L File'),('K', 'Key File'),('S', 'Sales Data File'))
     #Owner = models.ForeignKey(User, editable=False)
-    UniqueRunID = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
+    run = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
     #CompanyName = models.CharField(max_length=100, blank=False)
     #RunNo = models.IntegerField(blank=False)
     #RunName = models.CharField(max_length=20,blank=True)
-    FileType = models.CharField(max_length=1,choices=PossibleFileTypes,blank=False,default='K')
+    FileType = models.CharField(max_length=1,choices=Possibletypes,blank=False,default='K')
     FileName = models.CharField(max_length=20,blank=False)
-    TheActualFile = models.FileField(blank=False)
+    File = models.FileField(blank=False)
     FileDescription = models.TextField(blank=True)
     class Meta:
         permissions = (
@@ -42,11 +42,11 @@ class FileSpace(models.Model):
     
     
 class TransactionData(models.Model):
-    UniqueRunID = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
-    SourceFileObject = models.ForeignKey(FileSpace,on_delete=models.CASCADE)
-    OrderNumber = models.CharField(max_length=25,blank=False)
-    OrderDate = models.DateField(blank=False)
-    BusinessUnit = models.CharField(max_length=100,blank=False)
+    run = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
+    SourceFile = models.ForeignKey(FileSpace,on_delete=models.CASCADE)
+    TransactionNumber = models.CharField(max_length=25,blank=False)
+    TransactionDate = models.DateField(blank=False)
+    Department = models.CharField(max_length=100,blank=False)
     CustomerNumber = models.CharField(max_length=25,blank=False)
     CustomerName = models.CharField(max_length=100,blank=True)
     ProductNumber = models.CharField(max_length=25,blank=False)

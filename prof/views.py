@@ -9,7 +9,7 @@ from guardian.shortcuts import get_objects_for_user, assign_perm
 from guardian.decorators import permission_required_or_403
 from django.contrib.auth.models import User
 from django.views.generic.edit import DeleteView
-from prof.ProcessingFunctions import ProcessTransactionData
+from prof.ProcessingFunctions import ProcessTransactionData, generateSamplePnL
 
 
 def index(request):
@@ -32,23 +32,27 @@ def runhome(request,runpk):
     if request.method=='POST':
         form=FileSpaceForm(request.POST, request.FILES)
         if form.is_valid():
-            newfile = FileSpace(UniqueRunID = RunSpace.objects.get(pk=runpk), FileType = request.POST['FileType'], FileName = request.POST['FileName'], TheActualFile=request.FILES['TheActualFile'])
+            newfile = FileSpace(run = RunSpace.objects.get(pk=runpk), FileType = request.POST['FileType'], FileName = request.POST['FileName'], File=request.FILES['File'])
             if newfile.FileType=='S':
-                if FileSpace.objects.filter(FileType='S', UniqueRunID=runobject):
-                    oldTransactionFile=FileSpace.objects.get(FileType='S', UniqueRunID=runobject)
+                if FileSpace.objects.filter(FileType='S', run=runobject):
+                    oldTransactionFile=FileSpace.objects.get(FileType='S', run=runobject)
                     oldTransactionFile.delete()
                     newfile.save()
                     ProcessTransactionData(newfile,runobject)
                 else:
                     newfile.save()
                     ProcessTransactionData(newfile,runobject)
+                if not(FileSpace.objects.filter(FileType='P', run=runobject)):
+                    PnL_sample_file=FileSpace(run=runobject,FileType='P', FileName = 'PnL Sample', FileDescription = 'A sample PnL available for downloas based on uploaded transactions data')
+                    PnL_sample_file.File.save('PnL_Sample_run{0}.xlsx'.format(runpk), generateSamplePnL(runobject))
+                    assign_perm('prof.file_owner',request.user,PnL_sample_file)
             assign_perm('prof.file_owner',request.user,newfile)
             return HttpResponseRedirect(reverse('prof:runhome', kwargs={'runpk' : runpk}, current_app='prof'))
             #return render(request, 'prof/plain.html',{'runpk': runpk})  #Just some test code to see behavior
     else:
         form=FileSpaceForm()
         
-    relevant_files=FileSpace.objects.filter(UniqueRunID=runobject)  #get_objects_for_user(request.user,'prof.file_owner').filter(CompanyName=company, RunNo = run)
+    relevant_files=FileSpace.objects.filter(run=runobject)  #get_objects_for_user(request.user,'prof.file_owner').filter(CompanyName=company, RunNo = run)
     pnl_files=relevant_files.filter(FileType='P')
     key_files=relevant_files.filter(FileType='K')
     sales_files=relevant_files.filter(FileType='S')
@@ -56,7 +60,7 @@ def runhome(request,runpk):
     local_context={'company' : company, 'local_runno' : local_runno, 'form' : form, 'pnl_files' : pnl_files, 'key_files' : key_files, 'sales_files' : sales_files, 'runpk' : runpk }
     return render(request, 'prof/runhome.html',local_context)
 
-
+#This view is not currently in use
 class FileDeleteConfirm(DeleteView):
     model = FileSpace
     runpk=1 #temporary please
