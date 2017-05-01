@@ -17,8 +17,8 @@ class Migration(migrations.Migration):
             name='TransactionData',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('OrderNumber', models.CharField(max_length=25)),
-                ('OrderDate', models.DateField()),
+                ('TransactionNumber', models.CharField(max_length=25)),
+                ('TransactionDate', models.DateField()),
                 ('BusinessUnit', models.CharField(max_length=100)),
                 ('CustomerNumber', models.CharField(max_length=25)),
                 ('CustomerName', models.CharField(blank=True, max_length=100)),

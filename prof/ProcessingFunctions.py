@@ -7,15 +7,15 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 #Database imports
 from django.db import transaction
-from prof.models import FileSpace, RunSpace, TransactionData
-#from __future__ import unicode_literals
+from prof.models import FileSpace, RunSpace, TransactionData, PnLData
 from django.core.files.base import ContentFile
 
 #Global constants import
-from prof.settings import desiredColumns, transactionSheetName, PnL_cunstructor_dict
+from prof.settings import Transactions_settings_dict, PnL_settings_dict
 
 #Other imports
 from datetime import date, timedelta, datetime
+import pandas as pd, numpy as np
 
 
 def ifHeaderReturnIndex(row, desiredColumns):
@@ -42,12 +42,17 @@ def isRowValid(row,index):
     '''Determines if the row is a valid data row. For the moment, simply checks if the first column dicted by selectedIndex is empty.'''
     return bool(row[index[0]].value)
 
+def isRowAggregate(row,index):
+    '''This function determines if a row is an aggregate row. For the moment, it will simply look at the bold rows.'''
+    return row[index[0]].font.b
 
 @transaction.atomic
-def ProcessTransactionData(fileObject, run, sheetName=transactionSheetName,keyFileObject=None):
-    """ This function takes the file object, the name of the sheet in which the data is stores, and loads the transaction data into the Django model TransactionData."""
-    if not(keyFileObject): keyFileObject = fileObject
-    wb=load_workbook(fileObject.file, read_only=True, data_only=True)
+def ProcessTransactionData(fileObject, run, Transactions_settings_dict = Transactions_settings_dict,foreignKeyFileObject=None):
+    ''' This function takes the file object, the name of the sheet in which the data is stores, and loads the transaction data into the Django model TransactionData.'''
+    sheetName = Transactions_settings_dict['TransactionSheetName']
+    desiredColumns = Transactions_settings_dict['desiredColumns']
+    if not(foreignKeyFileObject): foreignKeyFileObject = fileObject
+    wb=load_workbook(fileObject.File, read_only=True, data_only=True)
     ws=wb.get_sheet_by_name(sheetName)
     selectedIndex=None
     for row in ws.rows:
@@ -56,12 +61,16 @@ def ProcessTransactionData(fileObject, run, sheetName=transactionSheetName,keyFi
                 newrow=[row[i].value for i in selectedIndex]
                 dictionary=dict(zip(outputColumnNames,newrow))
                 dictionary['run']=run
-                dictionary['SourceFileObject']=keyFileObject
+                dictionary['SourceFile']=foreignKeyFileObject
                 TransactionData(**dictionary).save()
         else:
             if ifHeaderReturnIndex(row,desiredColumns):
                 selectedIndex=ifHeaderReturnIndex(row, desiredColumns)
-                outputColumnNames=[row[i].value.replace(" ", "") for i in selectedIndex]
+                outputColumnNames=[Transactions_settings_dict['column_names_to_model_dict'][row[i].value] for i in selectedIndex]
+
+
+
+
 
 
 def revCells(row):
@@ -103,7 +112,7 @@ def fixWidth(ws):
     for i, column_width in enumerate(column_widths):
         ws.column_dimensions[get_column_letter(i+1)].width = column_width
         
-def isRevAggregate(row,index,revenueMarkers):
+def isRevAggregate(row,index,revenueMarkers=PnL_settings_dict['revenueMarkers']):
     '''
     This function simply determined if a row in the PnL is a "Net Revenue" row, mostly used for stlying purposes.
     Presently, it simply looks at the text in the firxt column and checks if any of the markets are present.
@@ -130,7 +139,7 @@ def applyPnLStyling(ws,pnl_column_names,revenueMarkers):
             makeBold(row)
     
 
-def generateSamplePnLBUSheet(run, ws, BU, cunstructor_dict = PnL_cunstructor_dict):
+def generateSamplePnLBUSheet(run, ws, BU, cunstructor_dict = PnL_settings_dict):
     '''
     This function generates a sample PnL based on the transaction data. It basically accepts the run, and the BU as
     an argument and then determines the period in which tansactions were present. It then creates a sample based
@@ -138,17 +147,17 @@ def generateSamplePnLBUSheet(run, ws, BU, cunstructor_dict = PnL_cunstructor_dic
     
     #Determine the periods in which transacitons are present for the business unit, and create column names
     if BU == cunstructor_dict['aggregate_sheet_name']:
-        period_start_date=min(x.OrderDate for x in TransactionData.objects.filter(run=run))
-        period_end_date=max(x.OrderDate for x in TransactionData.objects.filter(run=run))
+        period_start_date=min(x.TransactionDate for x in TransactionData.objects.filter(run=run))
+        period_end_date=max(x.TransactionDate for x in TransactionData.objects.filter(run=run))
     else:
-        period_start_date=min(x.OrderDate for x in TransactionData.objects.filter(run=run, BusinessUnit = BU))
-        period_end_date=max(x.OrderDate for x in TransactionData.objects.filter(run=run, BusinessUnit = BU))
+        period_start_date= run.RunPeriodStart #   min(x.TransactionDate for x in TransactionData.objects.filter(run=run, BusinessUnit = BU))
+        period_end_date= run.RunPeriodEnd #  max(x.TransactionDate for x in TransactionData.objects.filter(run=run, BusinessUnit = BU))
     date_extent=[period_start_date+timedelta(i) for i in range((period_end_date-period_start_date).days+1)]
     date_set=set(datetime.strftime(i,'%b-%Y') for i in date_extent)
     period_column_names = sorted(date_set, key=lambda day: datetime.strptime(day, "%b-%Y"))
     
     #Create a preamble
-    preamble_rows=[['Business Unit', BU],['Period Start Date',period_start_date ],['Period End Date',period_end_date ],[]]
+    preamble_rows=[['Business Unit', 'Please duplicate this sheet for each business unit'],['Period Start Date',period_start_date ],['Period End Date',period_end_date ],[]]
 
     #Create the list of column names
     leading_column_names=cunstructor_dict['leading_column_names']
@@ -183,13 +192,81 @@ def generateSamplePnLBUSheet(run, ws, BU, cunstructor_dict = PnL_cunstructor_dic
     return(ws)
     
     
-def generateSamplePnL(run, cunstructor_dict = PnL_cunstructor_dict):
+def generateSamplePnL(run, cunstructor_dict = PnL_settings_dict):
     wb=Workbook()
     wb.remove_sheet(wb.active)
-    BUs = set(x.BusinessUnit for x in TransactionData.objects.filter(run=run))
-    BUs.add(cunstructor_dict['aggregate_sheet_name'])
-    
+    #BUs = set(x.BusinessUnit for x in TransactionData.objects.filter(run=run))
+    #BUs.add(cunstructor_dict['aggregate_sheet_name'])
+    BUs = [cunstructor_dict['aggregate_sheet_name']] #well, we decided to create a sample just for the whole thing in the end.
     for BU in BUs:
         ws=wb.create_sheet(BU)
         generateSamplePnLBUSheet(run, ws, BU, cunstructor_dict)
     return(ContentFile(save_virtual_workbook(wb)))
+    
+    
+    
+def updateRunPeriod(run):
+    run.RunPeriodStart = min(x.TransactionDate for x in TransactionData.objects.filter(run=run))
+    run.RunPeriodEnd = max(x.TransactionDate for x in TransactionData.objects.filter(run=run))
+    run.save()
+    
+
+def returnPnLPeriodColumnNames(run):
+    date_extent=[run.RunPeriodStart+timedelta(i) for i in range((run.RunPeriodEnd-run.RunPeriodStart).days+1)]
+    date_set=set(datetime.strftime(i,'%b-%Y') for i in date_extent)
+    return sorted(date_set, key=lambda day: datetime.strptime(day, "%b-%Y"))
+    
+    
+    
+    
+    
+def processPnLSheet_to_pd(ws, run, PnL_settings_dict=PnL_settings_dict):
+    '''This function processes a PnL file sheet. It takes an openpyxl worksheet (ws), and then returnds a pandas dataframe.
+    The arguments are:
+    1. ws: Name of the worksheet to process
+    2. PnL_settings_dict: The dictionary in prof/settings'''
+    desiredColumns = PnL_settings_dict['leading_column_names'] + returnPnLPeriodColumnNames(run) + [PnL_settings_dict['total_column_name']]
+    revenueSwitch=True
+    selectedIndex=None
+    for row in ws.iter_rows():
+        if selectedIndex:
+            if isRowValid(row,selectedIndex):
+                newrow=[row[i].value for i in selectedIndex]
+                newrow.append(isRowAggregate(row,selectedIndex))
+                newrow.append(revenueSwitch)
+                if isRevAggregate(row,selectedIndex): revenueSwitch = False
+                df=df.append(pd.DataFrame([newrow], columns=outputColumnNames))
+        elif ifHeaderReturnIndex(row,desiredColumns):
+            selectedIndex=ifHeaderReturnIndex(row, desiredColumns)
+            outputColumnNames=[row[i].value for i in selectedIndex]
+            outputColumnNames.append(PnL_settings_dict['revenue_or_cost_column_name'])
+            outputColumnNames.append(PnL_settings_dict['aggregate_line_flag_column_name'])
+            df=pd.DataFrame(columns=outputColumnNames)
+    return(df)
+
+@transaction.atomic
+def processPnLFile(fileObject, run, PnL_settings_dict=PnL_settings_dict, foreignKeyFileObject=None):
+    '''This function processes a PnL file sheet. It takes an PnL file object, and feeds the data to the Django model
+    named PnLData.
+    The arguments are:
+    1. fileObject: The PnL file object (an object of FileSpace model)
+    2. run: The associated run, an object of the RunSpace model
+    3. PnL_settings_dict: The dictionary in prof/settings
+    4. foreignKeyFileObject: The file object which should be marked as the foreign key if not the same as fileObject'''
+    if not(foreignKeyFileObject): foreignKeyFileObject = fileObject
+    wb=load_workbook(fileObject.File, read_only=True, data_only=True)
+    periodColumns = returnPnLPeriodColumnNames(run)
+    desiredColumns = PnL_settings_dict['leading_column_names'] + returnPnLPeriodColumnNames(run) + [PnL_settings_dict['total_column_name']]
+    columnsForModel = PnL_settings_dict['leading_column_names'] +[PnL_settings_dict['revenue_or_cost_column_name']] + [PnL_settings_dict['aggregate_line_flag_column_name']]
+    fullPnL=pd.concat([processPnLSheet_to_pd(ws, run, PnL_settings_dict).set_index(PnL_settings_dict['leading_column_names']) for ws in wb.worksheets], keys=wb.get_sheet_names(),names=[PnL_settings_dict['BU_column_name']]).reset_index().replace(np.nan,0)
+    fullPnL = pd.melt(fullPnL,id_vars=columnsForModel, value_vars=       
+        periodColumns,
+            var_name = PnL_settings_dict['period_column_name'], value_name=PnL_settings_dict['amount_column_name'])
+    fullPnL.columns = [PnL_settings_dict['column_names_to_model_dict'][i] for i in fullPnL.columns]
+    list_of_dicts = [row.to_dict() for index,row in fullPnL.iterrows()]
+    for row in list_of_dicts:
+        row['run'] = run
+        row['SourceFile'] = foreignKeyFileObject
+        PnLData(**row).save()
+        
+        

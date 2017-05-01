@@ -44,12 +44,12 @@ class Migration(migrations.Migration):
         ),
         migrations.RenameField(
             model_name='transactiondata',
-            old_name='OrderDate',
+            old_name='TransactionDate',
             new_name='TransactionDate',
         ),
         migrations.RenameField(
             model_name='transactiondata',
-            old_name='OrderNumber',
+            old_name='TransactionNumber',
             new_name='TransactionNumber',
         ),
     ]

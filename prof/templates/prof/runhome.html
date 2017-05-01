@@ -17,8 +17,8 @@ The P&L File:<br>
 {% endfor %}
 </p>
 <p>
-The Sales File:<br>
-{% for file in sales_files %}
+The Transactions File:<br>
+{% for file in transactions_files %}
     <a href="{{ file.File.url }}">{{ file.FileName }}</a>
 {% endfor %}
 </p>

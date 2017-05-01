@@ -1,8 +1,15 @@
 ####PROF SPECIFIC SETTINGS####
-desiredColumns=('Order Number', 'Order Date', 'Business Unit', 'Customer Number', 'Customer Name', 'Product Number', 'Quantity',
-                'List Price', 'Total Price', 'Discount', 'Invoice Amount')
 
-transactionSheetName = 'TransactionData'
+BU_column_name = 'Business Unit'
+
+
+
+Transaction_desiredColumns=('Transaction Number', 'Transaction Date', BU_column_name, 'Customer Number', 'Customer Name', 'Product Number', 'Quantity',
+                'List Price', 'Total Price', 'Discount', 'Invoice Amount')
+Transaction_modelFields=('TransactionNumber', 'TransactionDate', 'BusinessUnit', 'CustomerNumber', 'CustomerName', 'ProductNumber', 'Quantity',
+                'ListPrice', 'TotalPrice', 'Discount', 'InvoiceAmount')  #These are the names of columns in the model, do not change here
+TransactionSheetName = 'TransactionData'
+Transaction_column_names_to_model_dict = dict(zip(Transaction_desiredColumns,Transaction_modelFields))
 
 PnL_revenueMarkers=['Total Revenue', 'Total Rev', 'Net Rev', 'Net Revenue']
 PnL_sample_line_descriptions=['Sales', 'Sales Returns (Reduction)', 'Sales Discounts (Reduction)', 'Other Revenue 1', 'Other Revenue 2', 'Other Revenue 3', '…', 'Net Revenue', '', 'Material 1', 'Material 2', '..', 'Direct Material', '', 'Labor', 'Labor Overtime', '…', 'Direct Labor', '', 'Other Direct Cost 1', '…', '…', '…', '…', 'Cost of Goods Sold', '', 'Gross Profit', '', 'Rent', 'Office Supplies', 'Utilities', 'Telephone', 'Insurance', 'Travel', 'Maintenance', 'Advertising', 'Other 1', 'Other 2', 'Other 3', '…', '…', 'EBITDA', '', '', 'Depreciation', 'Amortization', '…', '', 'Operating Income (EBIT)', '', '', 'Interest Expense (Income)', 'Income Tax Expense', '…', '…', '', '', 'Net Income']
@@ -11,11 +18,35 @@ PnL_sample_line_aggregate_status=[0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
 PnL_leading_column_names=['Line Description', 'Line Code']
 PnL_total_column_name='All Months'
 PnL_aggregate_sheet_name = 'All BUs'
-PnL_cunstructor_dict={'revenueMarkers':PnL_revenueMarkers,
+PnL_revenue_or_cost_column_name = 'RevorCost'
+PnL_aggregate_line_flag_column_name = 'Aggregate'
+PnL_period_column_name = 'Period'
+PnL_amount_column_name = 'Amount'
+PnL_column_names_to_model_dict = dict(zip(PnL_leading_column_names,['LineDescription', 'LineCode'])) #The list on the right are the name of the fields in the model, should not be changed here
+PnL_column_names_to_model_dict[PnL_revenue_or_cost_column_name]='RevorCost'  #The string on the right is the name of the field in the model, should not be changed here
+PnL_column_names_to_model_dict[PnL_aggregate_line_flag_column_name]='Aggregate'  #The string on the right is the name of the field in the model, should not be changed here
+PnL_column_names_to_model_dict[PnL_period_column_name]='Period'  #The string on the right is the name of the field in the model, should not be changed here
+PnL_column_names_to_model_dict[PnL_amount_column_name]='Amount'  #The string on the right is the name of the field in the model, should not be changed here
+
+
+Transactions_settings_dict = { 'desiredColumns' : Transaction_desiredColumns,
+        'TransactionSheetName' : TransactionSheetName,
+        'column_names_to_model_dict' : Transaction_column_names_to_model_dict
+}
+
+PnL_settings_dict={'revenueMarkers':PnL_revenueMarkers,
          'sample_line_descriptions':PnL_sample_line_descriptions,
          'sample_line_codes' : PnL_sample_line_codes,
          'sample_line_aggregate_status': PnL_sample_line_aggregate_status,
          'leading_column_names' : PnL_leading_column_names,
          'total_column_name' : PnL_total_column_name,
-         'aggregate_sheet_name' : PnL_aggregate_sheet_name
+         'aggregate_sheet_name' : PnL_aggregate_sheet_name,
+         'revenue_or_cost_column_name' : PnL_revenue_or_cost_column_name,
+         'aggregate_line_flag_column_name' : PnL_aggregate_line_flag_column_name,
+         'BU_column_name' : BU_column_name,
+         'period_column_name' : PnL_period_column_name,
+         'amount_column_name' : PnL_amount_column_name,
+         'column_names_to_model_dict' : PnL_column_names_to_model_dict
 }
+
+

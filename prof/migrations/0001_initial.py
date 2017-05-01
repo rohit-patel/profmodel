@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             name='FileSpace',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('FileType', models.CharField(choices=[('P', 'P&L File'), ('K', 'Key File'), ('S', 'Sales Data File')], default='K', max_length=1)),
+                ('FileType', models.CharField(choices=[('P', 'P&L File'), ('K', 'Key File'), ('T', 'Transactions Data File')], default='K', max_length=1)),
                 ('FileName', models.CharField(max_length=20)),
                 ('TheActualFile', models.FileField(upload_to='')),
                 ('FileDescription', models.TextField(blank=True)),
