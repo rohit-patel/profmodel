@@ -9,7 +9,7 @@ from guardian.shortcuts import get_objects_for_user, assign_perm
 from guardian.decorators import permission_required_or_403
 from django.contrib.auth.models import User
 from django.views.generic.edit import DeleteView
-from prof.ProcessingFunctions import ProcessTransactionData, generateSamplePnL, updateRunPeriod, processPnLFile
+from prof.ProcessingFunctions import ProcessTransactionData, generateSamplePnL, updateRunPeriod, processPnLFile, createQuantityKey
 
 
 def index(request):
@@ -47,6 +47,10 @@ def runhome(request,runpk):
                     PnL_sample_file=FileSpace(run=runobject,FileType='P', FileName = 'PnL Sample', FileDescription = 'A sample PnL available for downloas based on uploaded transactions data')
                     PnL_sample_file.File.save('PnL_Sample_run{0}.xlsx'.format(runpk), generateSamplePnL(runobject))
                     assign_perm('prof.file_owner',request.user,PnL_sample_file)
+                if not(FileSpace.objects.filter(FileType='K', run=runobject)):
+                    Quantity_Key_file=FileSpace(run=runobject,FileType='K', FileName = 'Quantity Key', FileDescription = 'The Quantity key created from the transaction data')
+                    Quantity_Key_file.File.save('Quantity_Key{0}.xlsx'.format(runpk), createQuantityKey(runobject))
+                    assign_perm('prof.file_owner',request.user,Quantity_Key_file)
             elif newfile.FileType=='P':
                 if FileSpace.objects.filter(FileType='P', run=runobject):
                     oldTransactionFile=FileSpace.objects.get(FileType='P', run=runobject)
@@ -66,10 +70,11 @@ def runhome(request,runpk):
         
     relevant_files=FileSpace.objects.filter(run=runobject)  #get_objects_for_user(request.user,'prof.file_owner').filter(CompanyName=company, RunNo = run)
     pnl_files=relevant_files.filter(FileType='P')
+    pnl_grouping_files=relevant_files.filter(FileType='G')
     key_files=relevant_files.filter(FileType='K')
     transactions_files=relevant_files.filter(FileType='T')
     
-    local_context={'company' : company, 'local_runno' : local_runno, 'form' : form, 'pnl_files' : pnl_files, 'key_files' : key_files, 'transactions_files' : transactions_files, 'runpk' : runpk }
+    local_context={'company' : company, 'local_runno' : local_runno, 'form' : form, 'pnl_files' : pnl_files, 'key_files' : key_files, 'transactions_files' : transactions_files, 'pnl_grouping_files' : pnl_grouping_files, 'runpk' : runpk }
     return render(request, 'prof/runhome.html',local_context)
 
 #This view is not currently in use

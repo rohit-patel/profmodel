@@ -27,6 +27,9 @@ PnL_column_names_to_model_dict[PnL_revenue_or_cost_column_name]='RevorCost'  #Th
 PnL_column_names_to_model_dict[PnL_aggregate_line_flag_column_name]='Aggregate'  #The string on the right is the name of the field in the model, should not be changed here
 PnL_column_names_to_model_dict[PnL_period_column_name]='Period'  #The string on the right is the name of the field in the model, should not be changed here
 PnL_column_names_to_model_dict[PnL_amount_column_name]='Amount'  #The string on the right is the name of the field in the model, should not be changed here
+Key_last_col_name = 'Aggregate'
+
+Key_settings_dict = { 'last_col_name' : Key_last_col_name}
 
 
 Transactions_settings_dict = { 'desiredColumns' : Transaction_desiredColumns,

@@ -11,7 +11,7 @@ from prof.models import FileSpace, RunSpace, TransactionData, PnLData
 from django.core.files.base import ContentFile
 
 #Global constants import
-from prof.settings import Transactions_settings_dict, PnL_settings_dict
+from prof.settings import Transactions_settings_dict, PnL_settings_dict, Key_settings_dict
 
 #Other imports
 from datetime import date, timedelta, datetime
@@ -270,3 +270,32 @@ def processPnLFile(fileObject, run, PnL_settings_dict=PnL_settings_dict, foreign
         PnLData(**row).save()
         
         
+def createQuantityKey(run, Transactions_settings_dict= Transactions_settings_dict, Key_settings_dict=Key_settings_dict):
+    wb=Workbook()
+    wb.remove_sheet(wb.active)
+    ws = wb.create_sheet('Quantity')
+    Tr=pd.DataFrame.from_records(TransactionData.objects.filter(run=run).values())
+    Tr['Month'] = Tr['TransactionDate'].apply(lambda x: datetime.strftime(x,'%b-%Y'))
+    key_mont_column_names_sorted = sorted(set(Tr['Month']), key=lambda day: datetime.strptime(day, "%b-%Y"))
+    QKey=Tr[['BusinessUnit','ProductNumber','Month', 'Quantity']].groupby( ['BusinessUnit','ProductNumber','Month']).sum().round().unstack()
+    QKey.columns=QKey.columns.droplevel(0)
+    QKey.columns.name=None
+    #QKey[QKey!=np.nan]=None
+    #QKey['Trailing Twelve Months'] = np.nan
+    QKeyAgg=Tr[['BusinessUnit','ProductNumber', 'Quantity']].groupby( ['BusinessUnit','ProductNumber']).sum().round()
+    QKeyAgg.rename(columns={'Quantity': Key_settings_dict['last_col_name']},inplace=True)
+    QKey=pd.concat([QKey,QKeyAgg],axis=1)
+    QKey=QKey.reset_index().fillna(0)
+    QKey = QKey[['BusinessUnit','ProductNumber']+key_mont_column_names_sorted+[Key_settings_dict['last_col_name']]]
+    row=[]
+    for v in QKey.columns:
+        newcell = cell.Cell(ws,column='A', row=1,value=v)
+        newcell.font=Font(bold=True)
+        row.append(newcell)
+    ws.append(row)
+    for index, row in QKey.iterrows():
+        ws.append(list(row))
+    row = ws.row_dimensions[1]
+    row.font = Font(bold=True)
+    fixWidth(ws)
+    return(ContentFile(save_virtual_workbook(wb)))

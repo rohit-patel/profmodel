@@ -26,7 +26,7 @@ class RunSpace(models.Model):
 class FileSpace(models.Model):
     """These are the files uploaded by the user. Each file is mapped to a run and has user permissions that need to be managed.
     """
-    Possibletypes = (('P','P&L File'),('K', 'Key File'),('T', 'Transactions Data File'))
+    Possibletypes = (('P','P&L File'),('K', 'Key File'),('T', 'Transactions Data File'),('G', 'PnL Grouping File'))
     #Owner = models.ForeignKey(User, editable=False)
     run = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
     #CompanyName = models.CharField(max_length=100, blank=False)
@@ -65,9 +65,19 @@ class PnLData(models.Model):
     SourceFile = models.ForeignKey(FileSpace,on_delete=models.CASCADE)
     LineCode = models.CharField(max_length=50, blank=True)
     LineDescription = models.TextField(blank=False)
+    Group = models.CharField(max_length=30,blank=True)
     RevorCost = models.BooleanField(blank=False,null=False)
     Aggregate = models.BooleanField(blank=False,null=False)
-    Period = models.CharField(max_length=50, blank=False)
+    Period = models.CharField(max_length=10, blank=False)
     Amount = models.FloatField(blank=False)
     
     
+## In the end decided to read the keys directly from the excel files since it is a simple pandas read statement.    
+# class RatioKeys(models.Model):
+#     run = models.ForeignKey(RunSpace,on_delete=models.CASCADE)
+#     SourceFile = models.ForeignKey(FileSpace,on_delete=models.CASCADE)
+#     KeyName = models.CharField(max_length=20, blank=False)
+#     BusinessUnit = models.CharField(max_length=200,blank=False)
+#     ProductNumber = models.CharField(max_length=50,blank=False)
+#     Period = models.CharField(max_length=10, blank=False)
+#     KeyValue = models.FloatField(blank=False)

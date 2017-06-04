@@ -17,6 +17,12 @@ The P&L File:<br>
 {% endfor %}
 </p>
 <p>
+The P&L Grouping File:<br>
+{% for file in pnl_grouping_files %}
+    <a href="{{ file.File.url }}">{{ file.FileName }}</a>
+{% endfor %}
+</p>
+<p>
 The Transactions File:<br>
 {% for file in transactions_files %}
     <a href="{{ file.File.url }}">{{ file.FileName }}</a>
